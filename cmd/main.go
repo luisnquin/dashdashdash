@@ -38,6 +38,10 @@ func main() {
 		panic(err)
 	}
 
+	for _, route := range e.Routes() {
+		log.Debug().Msgf("%s - %s", route.Method, route.Path)
+	}
+
 	go func() {
 		if err := e.Start(":8700"); err != nil {
 			log.Err(err).Send()
