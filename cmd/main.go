@@ -20,6 +20,7 @@ func main() {
 	}
 
 	core.InitControllers(e, db)
+
 	if err := e.Start("localhost:8700"); err != nil {
 		log.Panic(err)
 	}
