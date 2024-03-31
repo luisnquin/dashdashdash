@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"os"
 	"os/signal"
 	"time"
 
 	"github.com/labstack/echo/v4"
+	echo_log "github.com/labstack/gommon/log"
 	"github.com/luisnquin/dashdashdash/internal/config"
 	"github.com/luisnquin/dashdashdash/internal/core"
 	"github.com/luisnquin/dashdashdash/internal/storage"
@@ -14,6 +16,8 @@ import (
 
 func main() {
 	e := echo.New()
+	e.Logger.SetOutput(os.Stderr)
+	e.Logger.SetLevel(echo_log.DEBUG)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()

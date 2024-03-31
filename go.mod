@@ -7,6 +7,7 @@ require (
 	github.com/docker/docker v26.0.0+incompatible
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/labstack/gommon v0.4.2
 	github.com/luisnquin/go-log v1.0.1
 	github.com/samber/lo v1.39.0
 	github.com/tursodatabase/libsql-client-go v0.0.0-20240327144008-dd14b387afb3
@@ -25,7 +26,6 @@ require (
 	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gookit/color v1.5.4 // indirect
-	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/libsql/sqlite-antlr4-parser v0.0.0-20240327125255-dbf53b6cbf06 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
