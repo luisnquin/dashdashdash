@@ -2,7 +2,6 @@ package docker
 
 import (
 	"io"
-	"log"
 )
 
 func getContainerStatusList() []string {
@@ -12,7 +11,7 @@ func getContainerStatusList() []string {
 func mustReadAll(r io.Reader) string {
 	b, err := io.ReadAll(r)
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	return string(b)

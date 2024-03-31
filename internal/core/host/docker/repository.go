@@ -2,13 +2,13 @@ package docker
 
 import (
 	"context"
-	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	docker "github.com/docker/docker/client"
 	"github.com/luisnquin/dashdashdash/internal/models"
+	"github.com/luisnquin/go-log"
 	"github.com/samber/lo"
 )
 
@@ -35,25 +35,29 @@ func (r Repository) ListContainers(ctx context.Context, status ...string) ([]mod
 	}
 
 	return lo.Map(containers, func(cont types.Container, _ int) models.DockerContainer {
+		var stdoutStr, stderrStr string
+
 		stdout, err := r.client.ContainerLogs(ctx, cont.ID, container.LogsOptions{
 			ShowStdout: true,
 			ShowStderr: false,
 		})
 		if err != nil {
-			log.Panic(err)
+			log.Err(err).Str("container_id", cont.ID).Msg("cannot get container stdout logs")
+		} else {
+			stdoutStr = mustReadAll(stdout)
+			stdout.Close()
 		}
-
-		defer stdout.Close()
 
 		stderr, err := r.client.ContainerLogs(ctx, cont.ID, container.LogsOptions{
 			ShowStdout: false,
 			ShowStderr: true,
 		})
 		if err != nil {
-			log.Panic(err)
+			log.Err(err).Str("container_id", cont.ID).Msg("cannot get container stderr logs")
+		} else {
+			stderrStr = mustReadAll(stderr)
+			stderr.Close()
 		}
-
-		defer stderr.Close()
 
 		return models.DockerContainer{
 			ID:              cont.ID,
@@ -70,7 +74,7 @@ func (r Repository) ListContainers(ctx context.Context, status ...string) ([]mod
 			Status:          cont.Status,
 			NetworkSettings: cont.NetworkSettings,
 			Mounts:          cont.Mounts,
-			Logs:            models.Stdio{Stdout: mustReadAll(stdout), Stderr: mustReadAll(stderr)},
+			Logs:            models.Stdio{Stdout: stdoutStr, Stderr: stderrStr},
 		}
 	}), nil
 }

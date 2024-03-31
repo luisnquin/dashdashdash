@@ -1,9 +1,10 @@
 package config
 
 import (
-	"log"
 	"os"
 	"strings"
+
+	"github.com/luisnquin/go-log"
 )
 
 type Config struct {
@@ -25,7 +26,7 @@ func (Database) TursoDBToken() string {
 func mustEnv(key string) string {
 	value := strings.TrimSpace(os.Getenv(key))
 	if value == "" {
-		log.Fatalf("environment variable '%s' is required", key)
+		log.Error().Msgf("environment variable '%s' is required", key)
 	}
 
 	return value

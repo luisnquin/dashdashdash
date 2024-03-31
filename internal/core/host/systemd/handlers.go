@@ -1,10 +1,10 @@
 package systemd
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/luisnquin/go-log"
 	"github.com/samber/lo"
 )
 
@@ -35,7 +35,7 @@ func (m Module) ListUnitsHandler() echo.HandlerFunc {
 		case SYSTEM_ONLY:
 			units, err := m.repo.systemd.ListSystemUnits(ctx, optFns...)
 			if err != nil {
-				log.Println(err)
+				log.Err(err).Msg("cannot list system units")
 
 				return c.JSON(http.StatusInternalServerError, err)
 			}
@@ -45,7 +45,7 @@ func (m Module) ListUnitsHandler() echo.HandlerFunc {
 		case USER_ONLY:
 			units, err := m.repo.systemd.ListUserUnits(ctx, optFns...)
 			if err != nil {
-				log.Println(err)
+				log.Err(err).Msg("cannot list user units")
 
 				return c.JSON(http.StatusInternalServerError, err)
 			}
@@ -55,14 +55,14 @@ func (m Module) ListUnitsHandler() echo.HandlerFunc {
 		default:
 			systemUnits, err := m.repo.systemd.ListSystemUnits(ctx, optFns...)
 			if err != nil {
-				log.Println(err)
+				log.Err(err).Msg("cannot list system units")
 
 				return c.JSON(http.StatusInternalServerError, err)
 			}
 
 			userUnits, err := m.repo.systemd.ListUserUnits(ctx, optFns...)
 			if err != nil {
-				log.Println(err)
+				log.Err(err).Msg("cannot list user units")
 
 				return c.JSON(http.StatusInternalServerError, err)
 			}

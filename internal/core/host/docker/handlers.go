@@ -1,10 +1,10 @@
 package docker
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/luisnquin/go-log"
 	"github.com/samber/lo"
 )
 
@@ -20,7 +20,7 @@ func (m Module) GetContainersHandler() echo.HandlerFunc {
 
 		containers, err := m.repo.docker.ListContainers(ctx, status)
 		if err != nil {
-			log.Println(err)
+			log.Err(err).Msg("unable to list containers")
 			return c.JSON(http.StatusInternalServerError, "unable to list containers")
 		}
 

@@ -10,6 +10,8 @@ type ControllersGetter interface {
 
 func LoadControllers(e *echo.Echo, getters []ControllersGetter) {
 	for _, item := range getters {
+		// e.Group() <- global middlewares
+
 		for _, controller := range item.GetControllers() {
 			controller.Materialize(e)
 		}
