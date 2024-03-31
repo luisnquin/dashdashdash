@@ -15,6 +15,8 @@ import (
 )
 
 func main() {
+	log.Init(os.Stderr)
+
 	e := echo.New()
 	e.Logger.SetOutput(os.Stderr)
 	e.Logger.SetLevel(echo_log.DEBUG)
