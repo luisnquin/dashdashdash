@@ -1,6 +1,10 @@
 package main
 
 import (
+	"context"
+	"os/signal"
+	"time"
+
 	"github.com/labstack/echo/v4"
 	"github.com/luisnquin/dashdashdash/internal/config"
 	"github.com/luisnquin/dashdashdash/internal/core"
@@ -11,6 +15,9 @@ import (
 func main() {
 	e := echo.New()
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	config := config.New()
 
 	db, err := storage.ConnectToTursoDB(config)
@@ -18,9 +25,31 @@ func main() {
 		panic(err)
 	}
 
-	core.InitControllers(e, db)
+	defer db.Close()
 
-	if err := e.Start("localhost:8700"); err != nil {
-		log.Err(err).Send()
+	closers, err := core.Init(ctx, e, db)
+	if err != nil {
+		panic(err)
+	}
+
+	go func() {
+		if err := e.Start(":8700"); err != nil {
+			log.Err(err).Send()
+		}
+	}()
+
+	<-ctx.Done()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
+	for i, closer := range closers {
+		if err := closer.Close(); err != nil {
+			log.Err(err).Msgf("unable to close closer %d", i)
+		}
+	}
+
+	if err := e.Shutdown(ctx); err != nil {
+		log.Err(err).Msg("unable to shutdown server :<")
 	}
 }
