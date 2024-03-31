@@ -1,31 +1,76 @@
 package systemd
 
 import (
-	"context"
 	"log"
 	"net/http"
 
-	"github.com/coreos/go-systemd/v22/dbus"
 	"github.com/labstack/echo/v4"
+	"github.com/samber/lo"
 )
 
-func (m Module) ListServicesHandler() echo.HandlerFunc {
+func (m Module) ListUnitsHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		conn, err := dbus.NewWithContext(c.Request().Context())
-		if err != nil {
-			log.Println(err)
-			return c.JSON(http.StatusInternalServerError, "unable to connect to dbus")
+		unitStatus, unitType := c.QueryParam("status"), c.QueryParam("type")
+		scope := parseListUnitsScopeParam(c.QueryParam("scope"))
+
+		if unitType != "" && !lo.Contains(getAllUnitTypes(), unitType) {
+			return c.JSON(http.StatusBadRequest, "invalid unit type")
+		} else if unitStatus != "" && !lo.Contains(getAllUnitStatuses(), unitStatus) {
+			return c.JSON(http.StatusBadRequest, "invalid unit status")
 		}
 
-		// dbus.NewUserConnectionContext()
+		ctx := c.Request().Context()
 
-		defer conn.Close()
+		var optFns []filterOption
 
-		units, err := conn.ListUnitsContext(context.TODO())
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, "unabke to list units")
+		if unitStatus != "" {
+			optFns = append(optFns, WithUnitStatus(unitStatus))
 		}
 
-		return c.JSON(http.StatusOK, units)
+		if unitType != "" {
+			optFns = append(optFns, WithUnitType(unitType))
+		}
+
+		switch scope {
+		case SYSTEM_ONLY:
+			units, err := m.repo.systemd.ListSystemUnits(ctx, optFns...)
+			if err != nil {
+				log.Println(err)
+
+				return c.JSON(http.StatusInternalServerError, err)
+			}
+
+			return c.JSON(http.StatusOK, units)
+
+		case USER_ONLY:
+			units, err := m.repo.systemd.ListUserUnits(ctx, optFns...)
+			if err != nil {
+				log.Println(err)
+
+				return c.JSON(http.StatusInternalServerError, err)
+			}
+
+			return c.JSON(http.StatusOK, units)
+
+		default:
+			systemUnits, err := m.repo.systemd.ListSystemUnits(ctx, optFns...)
+			if err != nil {
+				log.Println(err)
+
+				return c.JSON(http.StatusInternalServerError, err)
+			}
+
+			userUnits, err := m.repo.systemd.ListUserUnits(ctx, optFns...)
+			if err != nil {
+				log.Println(err)
+
+				return c.JSON(http.StatusInternalServerError, err)
+			}
+
+			return c.JSON(http.StatusOK, echo.Map{
+				"user":   userUnits,
+				"system": systemUnits,
+			})
+		}
 	}
 }

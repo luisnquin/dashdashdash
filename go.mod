@@ -6,6 +6,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/samber/lo v1.39.0
 	github.com/tursodatabase/libsql-client-go v0.0.0-20240327144008-dd14b387afb3
 )
 
