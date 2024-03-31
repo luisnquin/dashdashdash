@@ -23,7 +23,10 @@
 
             buildInputs = with pkgs; [
               turso-cli
+              go_1_22
               redis
+              gcc
+              air
             ];
           };
         }
