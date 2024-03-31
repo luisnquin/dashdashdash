@@ -7,6 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/luisnquin/dashdashdash/internal/core/host/docker"
+	"github.com/luisnquin/dashdashdash/internal/core/host/nix"
 	"github.com/luisnquin/dashdashdash/internal/core/host/systemd"
 	"github.com/luisnquin/dashdashdash/internal/core/users"
 	"github.com/luisnquin/dashdashdash/internal/helpers/echox"
@@ -21,8 +22,13 @@ func Init(_ context.Context, e *echo.Echo, db *sqlx.DB) ([]io.Closer, error) {
 		return nil, err
 	}
 
+	nixModule, err := nix.NewModule()
+	if err != nil {
+		return nil, err
+	}
+
 	echox.LoadControllers(e, []echox.ControllersGetter{
-		usersModule, systemdModule, dockerModule,
+		usersModule, systemdModule, dockerModule, nixModule,
 	})
 
 	return []io.Closer{
