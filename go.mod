@@ -3,6 +3,7 @@ module github.com/luisnquin/dashdashdash
 go 1.22.0
 
 require (
+	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/tursodatabase/libsql-client-go v0.0.0-20240327144008-dd14b387afb3
@@ -10,6 +11,7 @@ require (
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
+	github.com/godbus/dbus/v5 v5.0.4 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/libsql/sqlite-antlr4-parser v0.0.0-20240327125255-dbf53b6cbf06 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
