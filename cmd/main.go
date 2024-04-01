@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"os"
 	"os/signal"
 	"time"
@@ -31,12 +32,25 @@ func main() {
 		panic(err)
 	}
 
-	defer db.Close()
-
-	closers, err := core.Init(ctx, e, db)
+	cache, err := storage.NewRedisClient(ctx, config.Cache.GetRedisTrustedURL())
 	if err != nil {
 		panic(err)
 	}
+
+	closers, err := core.Init(ctx, e, config, db, cache)
+	if err != nil {
+		panic(err)
+	}
+
+	closers = append([]io.Closer{cache, db}, closers...)
+
+	defer func() {
+		for i, closer := range closers {
+			if err := closer.Close(); err != nil {
+				log.Err(err).Msgf("unable to close closer %d", i)
+			}
+		}
+	}()
 
 	for _, route := range e.Routes() {
 		log.Debug().Msgf("%s - %s", route.Method, route.Path)
@@ -52,12 +66,6 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
-
-	for i, closer := range closers {
-		if err := closer.Close(); err != nil {
-			log.Err(err).Msgf("unable to close closer %d", i)
-		}
-	}
 
 	if err := e.Shutdown(ctx); err != nil {
 		log.Err(err).Msg("unable to shutdown server :<")

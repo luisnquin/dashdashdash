@@ -26,7 +26,7 @@ func (r Repository) FindOneByUsername(username string) (models.User, error) {
 		return models.User{}, err
 	}
 
-	user.Password = nil
+	user.Password = ""
 
 	return user, nil
 }

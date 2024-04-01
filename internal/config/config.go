@@ -3,15 +3,60 @@ package config
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/luisnquin/go-log"
+	"github.com/xlzd/gotp"
 )
 
 type Config struct {
 	Database
+	Cache
+	Auth
 }
 
 func New() *Config { return &Config{} }
+
+type Auth struct{}
+
+func (Auth) GetOPTSecret() string {
+	s := mustEnv("OPT_SECRET")
+	// gotp.RandomSecret(16)
+	if !gotp.IsSecretValid(s) {
+		panic("OPT_SECRET is not valid")
+	}
+
+	return s
+}
+
+func (Auth) GetOPTIssuer() string {
+	return mustEnv("OPT_ISSUER")
+}
+
+func (Auth) GetJWTSecret() []byte {
+	return []byte(mustEnv("JWT_SECRET"))
+}
+
+func (Auth) GetJWTIssuer() string {
+	return mustEnv("JWT_ISSUER")
+}
+
+func (Auth) GetJWTDuration() time.Duration {
+	if v := os.Getenv("JWT_DURATION"); v != "" {
+		d, err := time.ParseDuration(v)
+		if err == nil {
+			return d
+		}
+	}
+
+	return time.Hour
+}
+
+type Cache struct{}
+
+func (Cache) GetRedisTrustedURL() string {
+	return mustEnv("REDIS_TRUSTED_URL")
+}
 
 type Database struct{}
 
