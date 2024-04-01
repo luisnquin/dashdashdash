@@ -22,7 +22,7 @@ func (r Repository) ListContainers(ctx context.Context, status ...string) ([]mod
 	// https://docs.docker.com/engine/api/v1.29/#tag/Container/operation/ContainerList
 	filters := filters.NewArgs()
 
-	if len(status) != 0 {
+	if len(status) != 0 && status[0] != "" {
 		filters.Add("status", status[0])
 	}
 
