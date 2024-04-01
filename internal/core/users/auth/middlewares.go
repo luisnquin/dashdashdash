@@ -17,18 +17,23 @@ import (
 )
 
 func (m Module) AuthCheckMiddleware() echo.MiddlewareFunc {
-	return CheckMiddleware(m.config, m.repo.auth.db, m.repo.auth.cache)
+	return authCheckMiddleware(m.config, m.repo.auth.db, m.repo.auth.cache)
 }
 
-func CheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client) echo.MiddlewareFunc {
+func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			authRepo := NewRepository(db, cache)
 
 			var cookie *http.Cookie
 
-			_, _, ok := c.Request().BasicAuth()
-			if ok {
+			getHasBasicAuth := func() bool {
+				_, _, ok := c.Request().BasicAuth()
+
+				return ok
+			}
+
+			if config.IsDevelopment && getHasBasicAuth() { // otherwise TOTP could be skipped
 				signedToken, err := doBasicAuth(c, config, authRepo)
 				if err != nil {
 					apiErr, ok := err.(echox.ApiError)
@@ -69,8 +74,6 @@ func CheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client) ec
 					Reason:  "no auth token provided",
 				})
 			}
-
-			fmt.Println("cookie.Value", cookie.Value)
 
 			token, err := jwt.Parse(cookie.Value, func(t *jwt.Token) (interface{}, error) {
 				if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {

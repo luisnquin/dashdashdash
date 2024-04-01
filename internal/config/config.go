@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -10,12 +11,20 @@ import (
 )
 
 type Config struct {
-	Database Database
-	Cache    Cache
-	Auth     Auth
+	IsDevelopment bool
+	Database      Database
+	Cache         Cache
+	Auth          Auth
 }
 
-func New() *Config { return &Config{} }
+func New() *Config {
+	isDev, err := strconv.ParseBool(mustEnv("DEV"))
+	if err != nil {
+		panic("DEV doesn't have a valid boolean value")
+	}
+
+	return &Config{IsDevelopment: isDev}
+}
 
 func (Config) GetIssuerName() string {
 	return "dash-dash-dash"
