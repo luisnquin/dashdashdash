@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -15,6 +16,8 @@ import (
 	"github.com/luisnquin/go-log"
 	"github.com/redis/go-redis/v9"
 )
+
+const UNFORTUNATELLY_ONLY_SESSION_OWNER_ALLOWED = "unfortunatelly only the session owner is allowed to be log in but don't worry, he'll be notified :)"
 
 func (m Module) AuthCheckMiddleware() echo.MiddlewareFunc {
 	return authCheckMiddleware(m.config, m.repo.auth.db, m.repo.auth.cache)
@@ -28,9 +31,9 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 			var cookie *http.Cookie
 
 			getHasBasicAuth := func() bool {
-				_, _, ok := c.Request().BasicAuth()
+				username, _, ok := c.Request().BasicAuth()
 
-				return ok
+				return ok && username == os.Getenv("USER")
 			}
 
 			if config.IsDevelopment && getHasBasicAuth() { // otherwise TOTP could be skipped
@@ -96,6 +99,13 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 				return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
 					Success: false,
 					Reason:  "invalid auth token",
+				})
+			}
+
+			if username != os.Getenv("USER") {
+				return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
+					Success: false,
+					Reason:  UNFORTUNATELLY_ONLY_SESSION_OWNER_ALLOWED,
 				})
 			}
 
