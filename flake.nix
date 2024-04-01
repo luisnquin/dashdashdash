@@ -15,8 +15,10 @@
             };
             inherit system;
           };
+
+          dashdashdash = pkgs.callPackage ./default.nix {};
         in {
-          defaultPackage = pkgs.hello;
+          defaultPackage = dashdashdash;
 
           devShells.default = pkgs.mkShell {
             inherit system;
