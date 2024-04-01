@@ -35,6 +35,7 @@ func (m Module) GetControllers() []echox.Controller {
 			Method:  http.MethodGet,
 			Path:    "/host/nix/user-env/packages",
 			Handler: m.GetInstalledUserEnvPackagesHandler(),
+			Auth:    true,
 		},
 	}
 }

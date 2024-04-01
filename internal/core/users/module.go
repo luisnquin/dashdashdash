@@ -31,6 +31,7 @@ func (m Module) GetControllers() []echox.Controller {
 			Method:  http.MethodGet,
 			Path:    "/user/:username",
 			Handler: m.GetUserByUsernameHandler(),
+			Auth:    true,
 		},
 	}
 }

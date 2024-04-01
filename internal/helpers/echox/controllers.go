@@ -8,23 +8,22 @@ type ControllersGetter interface {
 	GetControllers() []Controller
 }
 
-func LoadControllers(e *echo.Echo, getters []ControllersGetter) {
-	for _, item := range getters {
-		// e.Group() <- global middlewares
-
-		for _, controller := range item.GetControllers() {
-			controller.Materialize(e)
-		}
-	}
-}
-
 type Controller struct {
 	Method      string
 	Handler     echo.HandlerFunc
 	Path        string
 	Middlewares []echo.MiddlewareFunc
+	Auth        bool
 }
 
-func (c Controller) Materialize(e *echo.Echo) {
-	e.Add(c.Method, c.Path, c.Handler, c.Middlewares...)
+func LoadControllers(e *echo.Echo, authMiddleware echo.MiddlewareFunc, getters []ControllersGetter) {
+	for _, item := range getters {
+		for _, controller := range item.GetControllers() {
+			if controller.Auth {
+				controller.Middlewares = append([]echo.MiddlewareFunc{authMiddleware}, controller.Middlewares...)
+			}
+
+			e.Add(controller.Method, controller.Path, controller.Handler, controller.Middlewares...)
+		}
+	}
 }

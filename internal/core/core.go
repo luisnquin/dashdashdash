@@ -31,7 +31,7 @@ func Init(_ context.Context, e *echo.Echo, config *config.Config, db *sqlx.DB, c
 		return nil, err
 	}
 
-	echox.LoadControllers(e, []echox.ControllersGetter{
+	echox.LoadControllers(e, authModule.AuthCheckMiddleware(), []echox.ControllersGetter{
 		usersModule, systemdModule, dockerModule, nixModule,
 		authModule,
 	})

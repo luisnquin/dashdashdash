@@ -39,6 +39,7 @@ func (m Module) GetControllers() []echox.Controller {
 			Method:  http.MethodGet,
 			Path:    "/host/docker/containers",
 			Handler: m.GetContainersHandler(),
+			Auth:    true,
 		},
 	}
 }
