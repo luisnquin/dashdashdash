@@ -37,7 +37,7 @@ func (m Module) GetControllers() []echox.Controller {
 	return []echox.Controller{
 		{
 			Method:  http.MethodGet,
-			Path:    "/auth/topt/generate",
+			Path:    "/auth/totp/generate",
 			Handler: m.GenerateTOTPUriHandler(), // Auth Basic || JWT -> uri
 			Middlewares: []echo.MiddlewareFunc{
 				m.AuthCheckMiddleware(),
@@ -45,7 +45,7 @@ func (m Module) GetControllers() []echox.Controller {
 		},
 		{
 			Method:  http.MethodPost,
-			Path:    "/auth/topt/validate/:code",
+			Path:    "/auth/totp/validate/:code",
 			Handler: m.ValidateTOTPCodeHandler(), // Auth Basic || JWT -> TOTP code
 			Middlewares: []echo.MiddlewareFunc{
 				m.AuthCheckMiddleware(),
