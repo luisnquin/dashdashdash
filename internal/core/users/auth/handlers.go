@@ -46,7 +46,7 @@ func (m Module) LoginHandler() echo.HandlerFunc {
 		if err != nil {
 			apiErr, ok := err.(echox.ApiError)
 			if ok {
-				return c.JSON(apiErr.StatusCode, apiErr.Data)
+				return apiErr.JSON(c)
 			}
 
 			return c.JSON(http.StatusInternalServerError, LoginResponse{

@@ -41,7 +41,7 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 				if err != nil {
 					apiErr, ok := err.(echox.ApiError)
 					if ok {
-						return c.JSON(apiErr.StatusCode, apiErr.Data)
+						return apiErr.JSON(c)
 					}
 
 					return c.JSON(http.StatusInternalServerError, LoginResponse{
