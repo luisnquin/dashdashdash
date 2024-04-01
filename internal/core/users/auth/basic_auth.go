@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/luisnquin/dashdashdash/internal/config"
 	"github.com/luisnquin/dashdashdash/internal/helpers/echox"
+	"github.com/luisnquin/dashdashdash/internal/helpers/reasons"
 	"github.com/luisnquin/dashdashdash/internal/models"
 	"github.com/luisnquin/go-log"
 	"golang.org/x/crypto/bcrypt"
@@ -24,8 +25,9 @@ func doBasicAuth(c echo.Context, config *config.Config, authRepo Repository) (si
 		return "", echox.ApiError{
 			StatusCode: http.StatusUnauthorized,
 			Data: LoginResponse{
-				Success: false,
-				Reason:  "no basic auth credentials provided",
+				Success:    false,
+				Reason:     "no basic auth credentials provided",
+				ReasonCode: reasons.SESSION_MISSING_CREDS,
 			},
 		}
 	}
@@ -38,8 +40,9 @@ func doBasicAuth(c echo.Context, config *config.Config, authRepo Repository) (si
 			return "", echox.ApiError{
 				StatusCode: http.StatusUnauthorized,
 				Data: LoginResponse{
-					Success: false,
-					Reason:  fmt.Sprintf("user '%s' not found", username),
+					Success:    false,
+					Reason:     fmt.Sprintf("user '%s' not found", username),
+					ReasonCode: reasons.SESSION_MISSING_USER,
 				},
 			}
 		}
@@ -47,8 +50,9 @@ func doBasicAuth(c echo.Context, config *config.Config, authRepo Repository) (si
 		return "", echox.ApiError{
 			StatusCode: http.StatusInternalServerError,
 			Data: LoginResponse{
-				Success: false,
-				Reason:  fmt.Sprintf("unable to find user '%s', try it again later", username),
+				Success:    false,
+				Reason:     fmt.Sprintf("unable to find user '%s', try it again later", username),
+				ReasonCode: reasons.INTERNAL_ERROR,
 			},
 		}
 	}
@@ -60,8 +64,9 @@ func doBasicAuth(c echo.Context, config *config.Config, authRepo Repository) (si
 		return "", echox.ApiError{
 			StatusCode: http.StatusUnauthorized,
 			Data: LoginResponse{
-				Success: false,
-				Reason:  message,
+				Success:    false,
+				Reason:     message,
+				ReasonCode: reasons.SESSION_INV_CREDS,
 			},
 		}
 	}
@@ -86,8 +91,9 @@ func doBasicAuth(c echo.Context, config *config.Config, authRepo Repository) (si
 		return "", echox.ApiError{
 			StatusCode: http.StatusInternalServerError,
 			Data: LoginResponse{
-				Success: false,
-				Reason:  fmt.Sprintf("unable to generate token for user '%s', try it again later", username),
+				Success:    false,
+				Reason:     fmt.Sprintf("unable to generate token for user '%s', try it again later", username),
+				ReasonCode: reasons.INTERNAL_ERROR,
 			},
 		}
 	}
@@ -98,8 +104,9 @@ func doBasicAuth(c echo.Context, config *config.Config, authRepo Repository) (si
 		return "", echox.ApiError{
 			StatusCode: http.StatusInternalServerError,
 			Data: LoginResponse{
-				Success: false,
-				Reason:  "something went wrong",
+				Success:    false,
+				Reason:     "something went wrong",
+				ReasonCode: reasons.INTERNAL_ERROR,
 			},
 		}
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/luisnquin/dashdashdash/internal/config"
 	"github.com/luisnquin/dashdashdash/internal/helpers/echox"
+	"github.com/luisnquin/dashdashdash/internal/helpers/reasons"
 	"github.com/luisnquin/go-log"
 	"github.com/redis/go-redis/v9"
 )
@@ -44,9 +45,10 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 						return apiErr.JSON(c)
 					}
 
-					return c.JSON(http.StatusInternalServerError, LoginResponse{
-						Success: false,
-						Reason:  "something went wrong",
+					return c.JSON(http.StatusInternalServerError, AuthMiddlewareResponse{
+						Success:    false,
+						Reason:     "something went wrong",
+						ReasonCode: reasons.INTERNAL_ERROR,
 					})
 				}
 
@@ -65,16 +67,18 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 					log.Err(err).Msg("error getting session cookie")
 
 					return c.JSON(http.StatusInternalServerError, AuthMiddlewareResponse{
-						Success: false,
-						Reason:  "something went wrong",
+						Success:    false,
+						Reason:     "something went wrong",
+						ReasonCode: reasons.INTERNAL_ERROR,
 					})
 				}
 			}
 
 			if cookie == nil || cookie.Value == "" {
 				return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
-					Success: false,
-					Reason:  "no auth token provided",
+					Success:    false,
+					Reason:     "no auth token provided",
+					ReasonCode: reasons.TOKEN_MISSING,
 				})
 			}
 
@@ -96,31 +100,35 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 					l.Msg("token has expired")
 
 					return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
-						Success: false,
-						Reason:  "token has expired",
+						Success:    false,
+						Reason:     "token has expired",
+						ReasonCode: reasons.TOKEN_EXPIRED,
 					})
 				}
 
 				log.Err(err).Msg("failed to parse JWT token")
 
 				return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
-					Success: false,
-					Reason:  "invalid token",
+					Success:    false,
+					Reason:     "invalid token",
+					ReasonCode: reasons.TOKEN_INVALID,
 				})
 			}
 
 			username, ok := token.Claims.(jwt.MapClaims)["username"].(string)
 			if !ok {
 				return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
-					Success: false,
-					Reason:  "invalid auth token",
+					Success:    false,
+					Reason:     "invalid auth token",
+					ReasonCode: reasons.TOKEN_INVALID,
 				})
 			}
 
 			if username != os.Getenv("USER") {
 				return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
-					Success: false,
-					Reason:  UNFORTUNATELLY_ONLY_SESSION_OWNER_ALLOWED,
+					Success:    false,
+					Reason:     UNFORTUNATELLY_ONLY_SESSION_OWNER_ALLOWED,
+					ReasonCode: reasons.SESSION_IMPOSIBLE,
 				})
 			}
 
@@ -130,14 +138,16 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 
 				if errors.Is(err, sql.ErrNoRows) {
 					return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
-						Success: false,
-						Reason:  fmt.Sprintf("user '%s' not found", username),
+						Success:    false,
+						Reason:     fmt.Sprintf("user '%s' not found", username),
+						ReasonCode: reasons.SESSION_IMPOSIBLE,
 					})
 				}
 
-				return c.JSON(http.StatusInternalServerError, LoginResponse{
-					Success: false,
-					Reason:  "something went wrong",
+				return c.JSON(http.StatusInternalServerError, AuthMiddlewareResponse{
+					Success:    false,
+					Reason:     "something went wrong",
+					ReasonCode: reasons.INTERNAL_ERROR,
 				})
 			}
 
