@@ -42,6 +42,7 @@ func (m Module) GetControllers() []echox.Controller {
 			Middlewares: []echo.MiddlewareFunc{
 				m.AuthCheckMiddleware(),
 			},
+			Verbose: true,
 		},
 		{
 			Method:  http.MethodPost,

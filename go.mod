@@ -6,6 +6,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0
 	github.com/docker/docker v26.0.0+incompatible
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/jaevor/go-nanoid v1.3.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/labstack/gommon v0.4.2
