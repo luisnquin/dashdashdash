@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/labstack/echo/v4"
 	"github.com/luisnquin/dashdashdash/internal/config"
 	"github.com/luisnquin/dashdashdash/internal/helpers/echox"
 	"github.com/redis/go-redis/v9"
@@ -38,11 +39,17 @@ func (m Module) GetControllers() []echox.Controller {
 			Method:  http.MethodGet,
 			Path:    "/auth/topt/generate",
 			Handler: m.GenerateTOTPUriHandler(), // Auth Basic || JWT -> uri
+			Middlewares: []echo.MiddlewareFunc{
+				m.AuthCheckMiddleware(),
+			},
 		},
 		{
 			Method:  http.MethodPost,
 			Path:    "/auth/topt/validate/:code",
 			Handler: m.ValidateTOTPCodeHandler(), // Auth Basic || JWT -> TOTP code
+			Middlewares: []echo.MiddlewareFunc{
+				m.AuthCheckMiddleware(),
+			},
 		},
 		{
 			Method:  http.MethodPost,

@@ -14,3 +14,8 @@ type LoginResponse struct {
 	Reason  string  `json:"reason,omitempty"`
 	Token   *string `json:"token"`
 }
+
+type AuthMiddlewareResponse struct {
+	Success bool   `json:"success"`
+	Reason  string `json:"reason,omitempty"`
+}

@@ -38,3 +38,9 @@ func (r Repository) SaveUserSession(ctx context.Context, username, token string,
 
 	return result.Err()
 }
+
+func (r Repository) RemoveUserSession(ctx context.Context, username string) error {
+	result := r.cache.Del(ctx, fmt.Sprintf("session:%s", username))
+
+	return result.Err()
+}
