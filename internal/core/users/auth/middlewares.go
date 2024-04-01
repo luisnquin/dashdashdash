@@ -151,6 +151,7 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 				})
 			}
 
+			user.Password = ""
 			c.Set("user", &user)
 
 			return next(c)

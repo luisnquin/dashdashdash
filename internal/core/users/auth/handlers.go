@@ -17,6 +17,8 @@ func (m Module) GenerateTOTPUriHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		user, _ := c.Get("user").(*models.User)
 
+		log.Debug().Any("user", user).Msg("a new TOTP URI will be generated")
+
 		return c.JSON(http.StatusOK, GenerateTOPTURIResponse{
 			URI: m.totp.ProvisioningUri(user.Username, m.config.GetIssuerName()),
 		})
