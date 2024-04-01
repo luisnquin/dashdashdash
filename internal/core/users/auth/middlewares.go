@@ -86,6 +86,21 @@ func authCheckMiddleware(config *config.Config, db *sqlx.DB, cache *redis.Client
 				return config.Auth.GetJWTSecret(), nil
 			})
 			if err != nil {
+				if errors.Is(err, jwt.ErrTokenExpired) {
+					l := log.Debug()
+
+					if claims, ok := token.Claims.(jwt.MapClaims); ok {
+						l.Any("claims", claims)
+					}
+
+					l.Msg("token has expired")
+
+					return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
+						Success: false,
+						Reason:  "token has expired",
+					})
+				}
+
 				log.Err(err).Msg("failed to parse JWT token")
 
 				return c.JSON(http.StatusUnauthorized, AuthMiddlewareResponse{
