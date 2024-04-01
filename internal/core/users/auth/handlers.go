@@ -8,13 +8,17 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/luisnquin/dashdashdash/internal/helpers/echox"
+	"github.com/luisnquin/dashdashdash/internal/helpers/reasons"
+	"github.com/luisnquin/dashdashdash/internal/models"
 	"github.com/luisnquin/go-log"
 )
 
 func (m Module) GenerateTOTPUriHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		user, _ := c.Get("user").(*models.User)
+
 		return c.JSON(http.StatusOK, GenerateTOPTURIResponse{
-			URI: m.totp.ProvisioningUri("luisnquin", m.config.GetIssuerName()),
+			URI: m.totp.ProvisioningUri(user.Username, m.config.GetIssuerName()),
 		})
 	}
 }
@@ -29,8 +33,9 @@ func (m Module) ValidateTOTPCodeHandler() echo.HandlerFunc {
 			log.Warn().Msg("provided code wasn't valid :/")
 
 			return c.JSON(http.StatusUnauthorized, ValidateTOPTCodeResponse{
-				IsValid: false,
-				Reason:  "code doesn't match with the expected",
+				IsValid:    false,
+				Reason:     "code doesn't match with the expected",
+				ReasonCode: reasons.SESSION_INV_CREDS,
 			})
 		}
 
@@ -50,8 +55,9 @@ func (m Module) LoginHandler() echo.HandlerFunc {
 			}
 
 			return c.JSON(http.StatusInternalServerError, LoginResponse{
-				Success: false,
-				Reason:  "something went wrong",
+				Success:    false,
+				Reason:     "something went wrong",
+				ReasonCode: reasons.INTERNAL_ERROR,
 			})
 		}
 
@@ -70,8 +76,9 @@ func (m Module) LogoutHandler() echo.HandlerFunc {
 			log.Err(err).Msg("failed to remove JWT session from redis cache")
 
 			return c.JSON(http.StatusInternalServerError, LoginResponse{
-				Success: false,
-				Reason:  "something went wrong",
+				Success:    false,
+				Reason:     "something went wrong",
+				ReasonCode: reasons.INTERNAL_ERROR,
 			})
 		}
 

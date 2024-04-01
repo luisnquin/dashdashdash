@@ -1,8 +1,9 @@
 package auth
 
 type ValidateTOPTCodeResponse struct {
-	Reason  string `json:"reason,omitempty"`
-	IsValid bool   `json:"isValid"`
+	IsValid    bool   `json:"isValid"`
+	Reason     string `json:"reason,omitempty"`
+	ReasonCode string `json:"reasonCode,omitempty"`
 }
 
 type GenerateTOPTURIResponse struct {
