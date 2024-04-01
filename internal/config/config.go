@@ -10,12 +10,16 @@ import (
 )
 
 type Config struct {
-	Database
-	Cache
-	Auth
+	Database Database
+	Cache    Cache
+	Auth     Auth
 }
 
 func New() *Config { return &Config{} }
+
+func (Config) GetIssuerName() string {
+	return "dash-dash-dash"
+}
 
 type Auth struct{}
 
@@ -29,16 +33,8 @@ func (Auth) GetOPTSecret() string {
 	return s
 }
 
-func (Auth) GetOPTIssuer() string {
-	return mustEnv("OPT_ISSUER")
-}
-
 func (Auth) GetJWTSecret() []byte {
 	return []byte(mustEnv("JWT_SECRET"))
-}
-
-func (Auth) GetJWTIssuer() string {
-	return mustEnv("JWT_ISSUER")
 }
 
 func (Auth) GetJWTDuration() time.Duration {

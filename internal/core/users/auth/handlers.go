@@ -18,7 +18,7 @@ import (
 func (m Module) GenerateTOTPUriHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		return c.JSON(http.StatusOK, GenerateTOPTURIResponse{
-			URI: m.totp.ProvisioningUri("luisnquin", m.config.GetOPTIssuer()),
+			URI: m.totp.ProvisioningUri("luisnquin", m.config.GetIssuerName()),
 		})
 	}
 }
@@ -83,20 +83,20 @@ func (m Module) LoginHandler() echo.HandlerFunc {
 			})
 		}
 
-		tokenDuration := m.config.GetJWTDuration()
+		tokenDuration := m.config.Auth.GetJWTDuration()
 
 		claims := &models.JWTCustomClaims{
 			Username: user.Username,
 			Email:    user.Email,
 			RegisteredClaims: jwt.RegisteredClaims{
-				Issuer:    m.config.GetJWTIssuer(),
+				Issuer:    m.config.GetIssuerName(),
 				ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenDuration)),
 			},
 		}
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-		signedToken, err := token.SignedString(m.config.GetJWTSecret())
+		signedToken, err := token.SignedString(m.config.Auth.GetJWTSecret())
 		if err != nil {
 			log.Err(err).Msg("cannot generate jwt token, check the token or the claims")
 
@@ -114,6 +114,15 @@ func (m Module) LoginHandler() echo.HandlerFunc {
 				Reason:  "something went wrong",
 			})
 		}
+
+		c.SetCookie(&http.Cookie{
+			Name:     fmt.Sprintf("%s-token", m.config.GetIssuerName()),
+			Value:    signedToken,
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
+			Expires:  time.Now().Add(tokenDuration),
+		})
 
 		return c.JSON(http.StatusOK, LoginResponse{
 			Success: true,

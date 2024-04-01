@@ -9,7 +9,7 @@ import (
 )
 
 func ConnectToTursoDB(config *config.Config) (*sqlx.DB, error) {
-	db, err := sqlx.Open("libsql", fmt.Sprintf("%s?authToken=%s", config.TursoDBURL(), config.TursoDBToken()))
+	db, err := sqlx.Open("libsql", fmt.Sprintf("%s?authToken=%s", config.Database.TursoDBURL(), config.Database.TursoDBToken()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
